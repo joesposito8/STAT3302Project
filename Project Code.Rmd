@@ -1,0 +1,97 @@
+---
+title: "Stat 3302 Project Code"
+author: "Trenton Butz"
+date: "3/30/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(tidyverse)
+library(readxl)
+tennis <- read_excel("~/OSU Classes/Stat 3302/Project/Tennis data.xlsx")
+```
+
+Making a dataframe for winners of matches:
+
+```{r}
+winner <- tennis %>% 
+  select(tourney_id, tourney_name, surface, draw_size, tourney_level, tourney_date, 
+         match_num, winner_id, winner_seed, winner_entry, winner_name, winner_hand, 
+         winner_ht, winner_ioc, winner_age, best_of, round, minutes, w_ace, w_df, w_svpt, 
+         w_1stIn, w_1stWon, w_2ndWon, w_SvGms, w_bpSaved, w_bpFaced, winner_rank, 
+         winner_rank_points)
+
+names(winner) <- c("tourney_id", "tourney_name", "surface", "draw_size", "tourney_level", 
+                  "tourney_date", "match_num", "id", "seed", "entry", "name", "hand", 
+                  "ht", "ioc", "age", "best_of", "round", "minutes", "ace", "df", 
+                  "svpt", "1stIn", "1stWon", "2ndwon", "SvGms", "bpSaved", "bpFaced", 
+                  "rank", "rank_points")
+
+winner$won <- rep(1, 2796)
+
+head(winner, n = 5)
+```
+
+Making a dataframe for losers of matches:
+
+```{r}
+loser <- tennis %>% 
+  select(tourney_id, tourney_name, surface, draw_size, tourney_level, tourney_date, 
+         match_num, loser_id, loser_seed, loser_entry, loser_name, loser_hand, 
+         loser_ht, loser_ioc, loser_age, best_of, round, minutes, l_ace, l_df, l_svpt, 
+         l_1stIn, l_1stWon, l_2ndWon, l_SvGms, l_bpSaved, l_bpFaced, loser_rank, 
+         loser_rank_points)
+
+names(loser) <- c("tourney_id", "tourney_name", "surface", "draw_size", "tourney_level", 
+                  "tourney_date", "match_num", "id", "seed", "entry", "name", "hand", 
+                  "ht", "ioc", "age", "best_of", "round", "minutes", "ace", "df", 
+                  "svpt", "1stIn", "1stWon", "2ndwon", "SvGms", "bpSaved", "bpFaced", 
+                  "rank", "rank_points")
+
+loser$won <- rep(0, 2796)
+
+head(loser, n = 5)
+```
+
+
+Binding those two dataframes together:
+
+```{r}
+tennis <- rbind(winner, loser)
+head(tennis, n = 10)
+```
+
+Now, each match has a row for the winner and a row for the loser:
+
+```{r}
+filter(tennis, match_num == 300, tourney_name == "Brisbane")
+```
+
+
+```{r}
+library(nnet)
+tennis.model <- multinom(surface ~ ace, data = tennis, Hess = TRUE)
+
+summary(tennis.model)
+```
+
+
+```{r}
+tennis.model <- multinom(surface ~ ace + minutes, data = tennis, Hess = TRUE)
+
+summary(tennis.model)
+```
+
+```{r}
+tennis.model <- multinom(surface ~ ace + minutes + df, data = tennis, Hess = TRUE)
+
+summary(tennis.model)
+```
+
+
+
