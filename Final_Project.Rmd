@@ -1,0 +1,78 @@
+---
+title: "Final Project"
+author: "Joseph Esposito"
+date: "4/5/2022"
+output: html_document
+---
+
+Setup:
+```{r message=FALSE}
+library(tidyverse)
+library(readxl)
+tennis <- read_excel("Tennis data.xlsx")
+```
+
+```{r message=FALSE}
+tennis['upset'] = as.integer(tennis['winner_rank'] > tennis['loser_rank'])
+```
+
+EDA:
+```{r message=FALSE}
+tennis.model <- glm(upset ~ tourney_level, family="binomial", data=tennis)
+summary(tennis.model)
+```
+
+Tourney Level 'G' seems to be very important. This could be because of the number of rounds depending on the tournament.
+
+```{r message=FALSE}
+unique(subset(tennis, select=c('tourney_level', 'best_of')))
+```
+
+As suspected, the G tourney (Grand Slam Tournament) has 5 rounds while the rest of the tourneys have 3 rounds. This is probably a better indicator than the tourney number.
+
+```{r message=FALSE}
+tennis['best_of_3'] = as.integer(tennis['best_of'] == '3')
+
+tennis.model <- glm(upset ~ best_of_3, family="binomial", data=tennis)
+summary(tennis.model)
+```
+
+```{r message=FALSE}
+tennis.model <- glm(upset ~ draw_size, family="binomial", data=tennis)
+summary(tennis.model)
+```
+
+```{r message=FALSE}
+tennis.model <- glm(upset ~ round, family="binomial", data=tennis)
+summary(tennis.model)
+```
+
+```{r message=FALSE}
+tennis['final_round'] = with(tennis, ifelse(round == 'F', 1, 0))
+
+tennis.model <- glm(upset ~ final_round, family="binomial", data=tennis)
+summary(tennis.model)
+```
+
+Feature Engineering:
+```{r message=FALSE}
+tennis['rank_diff'] = abs(tennis['winner_rank'] - tennis['loser_rank'])
+tennis['best_of_3'] = as.integer(tennis['best_of'] == '3')
+tennis['final_round'] = with(tennis, ifelse(round == 'F', 1, 0))
+```
+
+Model:
+```{r message=FALSE}
+tennis.model <- glm(upset ~ rank_diff, family="binomial", data=tennis)
+summary(tennis.model)
+```
+
+```{r message=FALSE}
+tennis.model <- glm(upset ~ rank_diff + best_of_3, family="binomial", data=tennis)
+summary(tennis.model)
+```
+
+```{r message=FALSE}
+tennis.model <- glm(upset ~ rank_diff + best_of_3 + final_round, family="binomial", data=tennis)
+summary(tennis.model)
+```
